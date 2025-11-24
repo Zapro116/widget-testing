@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>localex</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <div
+      id="widget-status"
+      style="
+        display: none;
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 4px;
+        font-size: 14px;
+        z-index: 10000;
+        max-width: 300px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      "
+    ></div>
+    <script type="module" src="/src/main.jsx"></script>
+    <script>
+      const status = document.getElementById("widget-status");
+      const showStatus = (message, isError = false) => {
+        status.textContent = message;
+        status.style.backgroundColor = isError ? "#ff4444" : "#4caf50";
+        status.style.color = "#ffffff";
+        status.style.display = "block";
+        setTimeout(() => (status.style.display = "none"), 3000);
+      };
+
+      const widgetScript = document.createElement("script");
+      // widgetScript.src =
+      //   "https://jinchuriki.fynix.ai/widget/kurama-widget.umd.js";
+      widgetScript.src =
+        "https://assets.fexz0.de/fex-staging-assets-private/fexz0/kurama-widget/original/kurama-widget.umd.js";
+      widgetScript.crossOrigin = "anonymous";
+      widgetScript.onload = () => {
+        console.log("Widget script loaded successfully");
+        if (typeof KuramaWidget === "undefined") {
+          showStatus(
+            "Widget script loaded but KuramaWidget is not defined",
+            true
+          );
+          return;
+        }
+
+        window.loadWidget = ({ userEmail, clientId, clientSecret }) => {
+          KuramaWidget.init({
+            theme: "light",
+            title: "Kurama Widget",
+            width: 400,
+            height: 650,
+            defaultOpen: true,
+            shadowRoot: true,
+            userEmail: userEmail,
+            clientId: clientId,
+            clientSecret: clientSecret,
+            zIndex: 1000,
+            onReady: () => showStatus("Widget initialized successfully!"),
+            onOpen: () => showStatus("Widget opened"),
+            onClose: () => showStatus("Widget closed"),
+            onMessage: (message) => showStatus(`Message sent: ${message}`),
+            onError: (error) =>
+              showStatus(`Widget error: ${error.message}`, true),
+          });
+        };
+      };
+
+      widgetScript.onerror = () => {
+        console.error("Failed to load KuramaWidget script");
+        showStatus("Failed to load widget script", true);
+      };
+      document.head.appendChild(widgetScript);
+      console.log("Attempting to load widget script from:", widgetScript.src);
+    </script>
+  </body>
+</html>
